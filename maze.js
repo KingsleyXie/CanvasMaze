@@ -25,8 +25,13 @@ for (var i = 0; i < MAX_RANGE_OF_MAZE; i++)
 var maze_dumps = [];
 
 setup();
-paintMaze(maze);
 generateMaze(randint(generatex), randint(generatey));
+paintMaze(maze);
+
+setTimeout(function() {
+	searchMazeWithDFS(outsetx, outsety);
+	paintMaze(maze);
+}, 3000);
 
 maze_dumps.forEach(function(m, i) {
 	setTimeout(function() {
@@ -39,11 +44,11 @@ function setup() {
 		for (var j = 0; j <= generatey * 2 + 2; j++)
 			maze[i][j] = (i + j - 2) % 14 + 1;
 
-	for (var i = 0; i <= 2 * generatey + 2; i++ ) {
+	for (var i = 0; i <= 2 * generatey + 2; i++) {
 		maze[0][i] = 0; maze[2 * generatex + 2][i] = 0;
 	}
 
-	for (var i = 0; i <= 2 * generatex + 2; i++ ) {
+	for (var i = 0; i <= 2 * generatex + 2; i++) {
 		maze[i][0] = 0; maze[i][2 * generatey + 2] = 0;
 	}
 
@@ -71,6 +76,25 @@ function generateMaze(x, y) {
 	}
 }
 
+function searchMazeWithDFS(x, y) {
+	if (x == terminalx && y == terminaly) {
+		console.log("已到达迷宫的出口位置");
+		exit();
+	}
+
+	for (var step = 0; step < 4; step++) {
+		if ((x + dx[step] > 0)
+			&& (x + dx[step] <= mazerangex)
+			&& (y + dy[step] > 0)
+			&& (y + dy[step] <= mazerangey)
+			&& !maze[x + dx[step]][y + dy[step]]) {
+			x = x + dx[step]; y = y + dy[step]; maze[x][y] = 15;
+			searchMazeWithDFS(x, y);
+			maze[x][y] = 16; x = x - dx[step]; y = y - dy[step];
+		}
+	}
+}
+
 function randint(max) {
 	return Math.ceil(Math.random() * max);
 }
@@ -84,10 +108,10 @@ function paintMaze(m, presentx, presenty) {
 				color = '#AEB6BF';
 			} else {
 				switch (maze[i][j]) {
-					case 0: color = '#EAECEE'; break;
-					case 15: color = '#F39C12'; break;
+					case 0: color = '#CCD1D1'; break;
+					case 15: color = '#3498DB'; break;
 					case 16: color = '#E74C3C'; break;
-					case 17: color = '#3498DB'; break;
+					case 17: color = '#E74C3C'; break;
 					default: color = '#7F8C8D'; break;
 				}
 			}
