@@ -1,8 +1,8 @@
 const
 	MAX_RANGE_OF_MAZE = 60,
 	MIN_RANGE_OF_MAZE = 3,
-	generatex = 12,
-	generatey = 15,
+	generatex = 13,
+	generatey = 9,
 	outsetx = 2,
 	outsety = 1,
 	terminalx = 2 * generatex,
@@ -12,9 +12,18 @@ const
 
 const dx = [0, 1, 0, -1], dy = [1, 0, -1, 0];
 
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
+
+canvas.width = '900'; canvas.height = '900';
+canvas.style.width = '900px'; canvas.style.height = '900px';
+
 var maze = new Array(MAX_RANGE_OF_MAZE);
 for (var i = 0; i < MAX_RANGE_OF_MAZE; i++)
 	maze[i] = new Array(MAX_RANGE_OF_MAZE);
+
+setup();
+generateMaze(randint(generatex), randint(generatey));
 
 function setup() {
 	for (var i = 0; i <= generatex * 2 + 2; i++)
@@ -31,11 +40,6 @@ function setup() {
 
 	maze[outsetx][outsety] = 15; maze[terminalx][terminaly] = 0;
 }
-setup();
-console.table(maze);
-
-generateMaze(randint(generatex), randint(generatey));
-console.table(maze);
 
 function generateMaze(x, y) {
 	var doublex = x * 2, doubley = y * 2;
@@ -48,6 +52,7 @@ function generateMaze(x, y) {
 		if (doubley + dy[step] - 1 != mazerangey
 			&& maze[doublex + 2 * dx[step]][doubley + 2 * dy[step]]) {
 			maze[doublex + dx[step]][doubley + dy[step]] = 0;
+			paintMaze();
 			generateMaze( x + dx[step], y + dy[step] );
 		}
 	}
@@ -57,32 +62,23 @@ function randint(max) {
 	return Math.ceil(Math.random() * max);
 }
 
-
-
-var canvas = document.getElementById('canvas');
-canvas.width = '900';
-canvas.height = '900';
-
-canvas.style.width = '900px';
-canvas.style.height = '900px';
-
-var ctx = canvas.getContext('2d');
-// ctx.font = '32px Microsoft YaHei';
-// ctx.fillText('苟利国家生死以', 300, 300);
-
-ctx.fillStyle = 'SILVER';
-
-for (var i = 0; i < generatex; i++) {
-	for (var j = 0; j < generatex; j++) {
-		ctx.fillRect(j * 25, i * 25, 23, 23);
+function paintMaze(presentx, presenty) {
+	var color;
+	for (var i = 1; i <= mazerangex; i++) {
+		for (var j = 1; j <= mazerangey; j++) {
+			if ( i == presentx && j == presenty ) {
+				color = '#AEB6BF';
+			} else {
+				switch (maze[i][j]) {
+					case 0: color = '#EAECEE'; break;
+					case 15: color = '#F39C12'; break;
+					case 16: color = '#E74C3C'; break;
+					case 17: color = '#3498DB'; break;
+					default: color = '#7F8C8D'; break;
+				}
+			}
+			ctx.fillStyle = color;
+			ctx.fillRect(i * 25, j * 25, 25, 25);
+		}
 	}
-}
-
-
-resetColor(0, 0, 'RED');
-resetColor(3, 5, 'BLUE');
-
-function resetColor(x, y, color) {
-	ctx.fillStyle = color;
-	ctx.fillRect(x * 25, y * 25, 23, 23);
 }
