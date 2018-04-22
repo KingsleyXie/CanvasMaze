@@ -10,6 +10,8 @@ const
 	mazerangex = 2 * generatex + 1,
 	mazerangey = 2 * generatey + 1;
 
+const dx = [0, 1, 0, -1], dy = [1, 0, -1, 0];
+
 var maze = new Array(MAX_RANGE_OF_MAZE);
 for (var i = 0; i < MAX_RANGE_OF_MAZE; i++)
 	maze[i] = new Array(MAX_RANGE_OF_MAZE);
@@ -32,15 +34,28 @@ function setup() {
 setup();
 console.table(maze);
 
-generateMaze(
-	Math.ceil(Math.random() * generatex),
-	Math.ceil(Math.random() * generatey)
-);
+generateMaze(randint(generatex), randint(generatey));
+console.table(maze);
 
 function generateMaze(x, y) {
+	var doublex = x * 2, doubley = y * 2;
+	var phase = (Math.random() > 0.5) ? 1 : 3;
+
+	maze[doublex][doubley] = 0;
+
+	for (var i = 0, step = randint(4) - 1;
+		i < 4; i++, step = (step + phase) % 4 ) {
+		if (doubley + dy[step] - 1 != mazerangey
+			&& maze[doublex + 2 * dx[step]][doubley + 2 * dy[step]]) {
+			maze[doublex + dx[step]][doubley + dy[step]] = 0;
+			generateMaze( x + dx[step], y + dy[step] );
+		}
+	}
 }
 
-
+function randint(max) {
+	return Math.ceil(Math.random() * max);
+}
 
 
 
