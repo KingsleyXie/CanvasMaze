@@ -22,6 +22,20 @@ var maze = new Array(MAX_RANGE_OF_MAZE);
 for (var i = 0; i < MAX_RANGE_OF_MAZE; i++)
 	maze[i] = new Array(MAX_RANGE_OF_MAZE);
 
+var Q = new Array(), Qupdated;
+
+var QnextNum = new Array(MAX_RANGE_OF_MAZE);
+for (var i = 0; i < MAX_RANGE_OF_MAZE; i++) {
+	QnextNum[i] = new Array(MAX_RANGE_OF_MAZE);
+	QnextNum[i].fill(0);
+}
+
+var Qpre = new Array(MAX_RANGE_OF_MAZE);
+for (var i = 0; i < MAX_RANGE_OF_MAZE; i++) {
+	Qpre[i] = new Array(MAX_RANGE_OF_MAZE);
+	Qpre[i].fill([0, 0]);
+}
+
 var maze_dumps = [];
 
 setup();
@@ -29,9 +43,9 @@ generateMaze(randint(generatex), randint(generatey));
 paintMaze(maze);
 
 setTimeout(function() {
-	searchMazeWithDFS(outsetx, outsety);
+	searchMazeWithBFS(outsetx, outsety);
 	paintMaze(maze);
-}, 3000);
+}, 100);
 
 maze_dumps.forEach(function(m, i) {
 	setTimeout(function() {
@@ -71,7 +85,7 @@ function generateMaze(x, y) {
 			console.log(maze_dumps[96] == maze_dumps[95], maze_dumps.length);
 
 			maze[doublex + dx[step]][doubley + dy[step]] = 0;
-			generateMaze( x + dx[step], y + dy[step] );
+			generateMaze(x + dx[step], y + dy[step]);
 		}
 	}
 }
@@ -79,7 +93,7 @@ function generateMaze(x, y) {
 function searchMazeWithDFS(x, y) {
 	if (x == terminalx && y == terminaly) {
 		console.log("已到达迷宫的出口位置");
-		exit();
+		throw new Error("Terminal Reached!");
 	}
 
 	for (var step = 0; step < 4; step++) {
@@ -92,6 +106,56 @@ function searchMazeWithDFS(x, y) {
 			searchMazeWithDFS(x, y);
 			maze[x][y] = 16; x = x - dx[step]; y = y - dy[step];
 		}
+	}
+}
+
+function searchMazeWithBFS(x, y) {
+	Q.push([x, y]);
+	while (Q.length > 0) {
+		x = Q[Q.length - 1][0]; y = Q[Q.length - 1][1]; Qupdated = 0;
+		console.log(Q[0]);
+		console.log(x, y);
+		for (var step = 0; step < 4; step++) {
+			if ((x + dx[step] > 0)
+				&& (x + dx[step] <= mazerangex)
+				&& (y + dy[step] > 0)
+				&& (y + dy[step] <= mazerangey)
+				&& !maze[x + dx[step]][y + dy[step]]) {
+				var xstep = x + dx[step], ystep = y + dy[step];
+				maze[xstep][ystep] = 17;
+				Q.push([xstep, ystep]); Qupdated = 1;
+				console.log('Push', xstep, ystep);
+				console.log(Q[0]);
+				console.log(Q[1]);
+
+				Qpre[xstep][ystep] = [x, y]; QnextNum[x][y]++;
+
+				if (xstep == terminalx && ystep == terminaly) {
+					do {
+						maze[xstep][ystep] = 15;
+						var xtemp = Qpre[xstep][ystep][0];
+						ystep = Qpre[xstep][ystep][1];
+						xstep = xtemp;
+					} while (xstep && ystep);
+					console.log("已到达迷宫的出口位置\n");
+					throw new Error("Terminal Reached!");
+				}
+			}
+		}
+
+		if (!Qupdated) {
+			var deletex = x, deletey = y;
+			do {
+				maze[deletex][deletey] = 16;
+
+				var xtemp = Qpre[deletex][deletey][0];
+				deletey = Qpre[deletex][deletey][1];
+				deletex = xtemp;
+
+				QnextNum[deletex][deletey]--;
+			} while (deletex && deletey && !QnextNum[deletex][deletey]);
+		}
+		Q.pop();
 	}
 }
 
