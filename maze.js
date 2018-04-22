@@ -18,3 +18,19 @@ for (var i = 0; i < generatex; i++) {
 		ctx.fillRect(j * 25, i * 25, 23, 23);
 	}
 }
+
+resetColor(0, 0, 'RED');
+resetColor(3, 5, 'BLUE');
+
+generateMaze(
+	Math.ceil(Math.random() * generatex),
+	Math.ceil(Math.random() * generatey)
+);
+
+function generateMaze(x, y) {
+}
+
+function resetColor(x, y, color) {
+	ctx.fillStyle = color;
+	ctx.fillRect(x * 25, y * 25, 23, 23);
+}
