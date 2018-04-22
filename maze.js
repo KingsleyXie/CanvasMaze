@@ -22,8 +22,17 @@ var maze = new Array(MAX_RANGE_OF_MAZE);
 for (var i = 0; i < MAX_RANGE_OF_MAZE; i++)
 	maze[i] = new Array(MAX_RANGE_OF_MAZE);
 
+var maze_dumps = [];
+
 setup();
+paintMaze(maze);
 generateMaze(randint(generatex), randint(generatey));
+
+maze_dumps.forEach(function(m, i) {
+	setTimeout(function() {
+		paintMaze(m);
+	}, 50 * i);
+});
 
 function setup() {
 	for (var i = 0; i <= generatex * 2 + 2; i++)
@@ -48,11 +57,15 @@ function generateMaze(x, y) {
 	maze[doublex][doubley] = 0;
 
 	for (var i = 0, step = randint(4) - 1;
-		i < 4; i++, step = (step + phase) % 4 ) {
+		i < 4; i++, step = (step + phase) % 4) {
 		if (doubley + dy[step] - 1 != mazerangey
 			&& maze[doublex + 2 * dx[step]][doubley + 2 * dy[step]]) {
+			maze[doublex + dx[step]][doubley + dy[step]] = -1;
+			maze_dumps.push(maze);
+			console.log(maze_dumps[95] == maze_dumps[94], maze_dumps.length);
+			console.log(maze_dumps[96] == maze_dumps[95], maze_dumps.length);
+
 			maze[doublex + dx[step]][doubley + dy[step]] = 0;
-			paintMaze();
 			generateMaze( x + dx[step], y + dy[step] );
 		}
 	}
@@ -62,11 +75,12 @@ function randint(max) {
 	return Math.ceil(Math.random() * max);
 }
 
-function paintMaze(presentx, presenty) {
+function paintMaze(m, presentx, presenty) {
 	var color;
 	for (var i = 1; i <= mazerangex; i++) {
 		for (var j = 1; j <= mazerangey; j++) {
-			if ( i == presentx && j == presenty ) {
+			if ((i == presentx && j == presenty)
+				|| (i == -1 && j == -1)) {
 				color = '#AEB6BF';
 			} else {
 				switch (maze[i][j]) {
