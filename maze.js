@@ -36,22 +36,14 @@ for (var i = 0; i < MAX_RANGE_OF_MAZE; i++) {
 	Qpre[i].fill([0, 0]);
 }
 
-var maze_dumps = [];
+let maze_dumps = [];
+let searching = true;
 
 setup();
 generateMaze(randint(generatex), randint(generatey));
-paintMaze(maze);
+searchMazeWithDFS(outsetx, outsety);
 
-setTimeout(function() {
-	searchMazeWithBFS(outsetx, outsety);
-	paintMaze(maze);
-}, 100);
 
-maze_dumps.forEach(function(m, i) {
-	setTimeout(function() {
-		paintMaze(m);
-	}, 50 * i);
-});
 
 function setup() {
 	for (var i = 0; i <= generatex * 2 + 2; i++)
@@ -80,9 +72,8 @@ function generateMaze(x, y) {
 		if (doubley + dy[step] - 1 != mazerangey
 			&& maze[doublex + 2 * dx[step]][doubley + 2 * dy[step]]) {
 			maze[doublex + dx[step]][doubley + dy[step]] = -1;
-			maze_dumps.push(maze);
-			console.log(maze_dumps[95] == maze_dumps[94], maze_dumps.length);
-			console.log(maze_dumps[96] == maze_dumps[95], maze_dumps.length);
+
+			maze_dumps.push(JSON.stringify(maze));
 
 			maze[doublex + dx[step]][doubley + dy[step]] = 0;
 			generateMaze(x + dx[step], y + dy[step]);
@@ -92,19 +83,26 @@ function generateMaze(x, y) {
 
 function searchMazeWithDFS(x, y) {
 	if (x == terminalx && y == terminaly) {
-		console.log("已到达迷宫的出口位置");
-		throw new Error("Terminal Reached!");
-	}
+		showProcess();
+		searching = false;
+		throw "Terminal reached in DFS.";
+	} else {
+		for (let step = 0; step < 4; step++) {
+			if ((x + dx[step] > 0)
+				&& (x + dx[step] <= mazerangex)
+				&& (y + dy[step] > 0)
+				&& (y + dy[step] <= mazerangey)
+				&& !maze[x + dx[step]][y + dy[step]]) {
+				x = x + dx[step]; y = y + dy[step]; maze[x][y] = 15;
 
-	for (var step = 0; step < 4; step++) {
-		if ((x + dx[step] > 0)
-			&& (x + dx[step] <= mazerangex)
-			&& (y + dy[step] > 0)
-			&& (y + dy[step] <= mazerangey)
-			&& !maze[x + dx[step]][y + dy[step]]) {
-			x = x + dx[step]; y = y + dy[step]; maze[x][y] = 15;
-			searchMazeWithDFS(x, y);
-			maze[x][y] = 16; x = x - dx[step]; y = y - dy[step];
+				maze_dumps.push(JSON.stringify(maze));
+				searchMazeWithDFS(x, y);
+				maze_dumps.push(JSON.stringify(maze));
+
+				if (searching) {
+					maze[x][y] = 16; x = x - dx[step]; y = y - dy[step];
+				}
+			}
 		}
 	}
 }
@@ -155,7 +153,7 @@ function searchMazeWithBFS(x, y) {
 				QnextNum[deletex][deletey]--;
 			} while (deletex && deletey && !QnextNum[deletex][deletey]);
 		}
-		Q.pop();
+		Q.shift();
 	}
 }
 
@@ -168,10 +166,10 @@ function paintMaze(m, presentx, presenty) {
 	for (var i = 1; i <= mazerangex; i++) {
 		for (var j = 1; j <= mazerangey; j++) {
 			if ((i == presentx && j == presenty)
-				|| (i == -1 && j == -1)) {
+				|| (m[i][j] == -1)) {
 				color = '#AEB6BF';
 			} else {
-				switch (maze[i][j]) {
+				switch (m[i][j]) {
 					case 0: color = '#CCD1D1'; break;
 					case 15: color = '#3498DB'; break;
 					case 16: color = '#E74C3C'; break;
@@ -183,4 +181,13 @@ function paintMaze(m, presentx, presenty) {
 			ctx.fillRect(i * 25, j * 25, 25, 25);
 		}
 	}
+}
+
+function showProcess() {
+	maze_dumps.forEach(function(m, i) {
+		setTimeout(function() {
+			paintMaze(JSON.parse(m));
+		}, 50 * i);
+	});
+	paintMaze(maze);
 }
