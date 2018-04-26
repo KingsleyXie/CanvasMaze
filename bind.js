@@ -1,6 +1,6 @@
 document.getElementById("gen")
 .addEventListener('click', function () {
-	dumps = []; initialize();
+	setUp(); initialize();
 	generateMaze(randint(generatex), randint(generatey));
 	mazeGenerated = true; currMaze = JSON.stringify(maze);
 
@@ -10,27 +10,18 @@ document.getElementById("gen")
 document.getElementById("dfs")
 .addEventListener('click', function () {
 	if (!mazeGenerated) return;
-
-	dumps = [];
-	maze = JSON.parse(currMaze);
-	backTrack = true;
-
-	searchMazeWithDFS(outsetx, outsety, 30);
+	setUp(); searchMazeWithDFS(outsetx, outsety, 30);
 });
 
 document.getElementById("bfs")
 .addEventListener('click', function () {
 	if (!mazeGenerated) return;
-
-	dumps = [];
-	maze = JSON.parse(currMaze);
-
-	searchMazeWithBFS(outsetx, outsety, 300);
+	setUp(); searchMazeWithBFS(outsetx, outsety, 300);
 });
 
 document.getElementById("gen-res")
 .addEventListener('click', function () {
-	dumps = []; initialize();
+	setUp(); initialize();
 	generateMaze(randint(generatex), randint(generatey));
 	mazeGenerated = true; currMaze = JSON.stringify(maze);
 
@@ -40,20 +31,19 @@ document.getElementById("gen-res")
 document.getElementById("dfs-res")
 .addEventListener('click', function () {
 	if (!mazeGenerated) return;
-
-	dumps = [];
-	maze = JSON.parse(currMaze);
-	backTrack = true;
-
-	searchMazeWithDFS(outsetx, outsety, 0);
+	setUp(); searchMazeWithDFS(outsetx, outsety, 0);
 });
 
 document.getElementById("bfs-res")
 .addEventListener('click', function () {
 	if (!mazeGenerated) return;
-
-	dumps = [];
-	maze = JSON.parse(currMaze);
-
-	searchMazeWithBFS(outsetx, outsety, 0);
+	setUp(); searchMazeWithBFS(outsetx, outsety, 0);
 });
+
+function setUp() {
+	timeouts.forEach(function(t) {
+		clearTimeout(t);
+	});
+	dumps = []; backTrack = true;
+	if (mazeGenerated) maze = JSON.parse(currMaze);
+}

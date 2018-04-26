@@ -13,15 +13,15 @@ const dx = [0, 1, 0, -1], dy = [1, 0, -1, 0];
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 
-var maze = new Array(MAX_RANGE_OF_MAZE);
+let maze = new Array(MAX_RANGE_OF_MAZE);
 for (var i = 0; i < MAX_RANGE_OF_MAZE; i++)
 	maze[i] = new Array(MAX_RANGE_OF_MAZE);
 
 initialize();
 paintMaze(maze);
 
-let dumps = [];
 let backTrack = true;
+let dumps = [], timeouts = [];
 let mazeGenerated = false, currMaze = '';
 
 function initialize() {
@@ -186,12 +186,16 @@ function paintMaze(m) {
 
 function showProcess(t) {
 	dumps.forEach(function(m, i) {
-		setTimeout(function() {
-			paintMaze(JSON.parse(m));
-		}, i * t);
+		timeouts.push(
+			setTimeout(function() {
+				paintMaze(JSON.parse(m));
+			}, i * t)
+		);
 	});
 
-	setTimeout(function() {
-		paintMaze(maze);
-	}, dumps.length * t);
+	timeouts.push(
+		setTimeout(function() {
+			paintMaze(maze);
+		}, dumps.length * t)
+	);
 }
