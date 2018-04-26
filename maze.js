@@ -17,15 +17,14 @@ var maze = new Array(MAX_RANGE_OF_MAZE);
 for (var i = 0; i < MAX_RANGE_OF_MAZE; i++)
 	maze[i] = new Array(MAX_RANGE_OF_MAZE);
 
-let maze_dumps = [];
-let dfs_searching = true;
+initialize();
+paintMaze(maze);
 
-init();
-generateMaze(randint(generatex), randint(generatey));
-// searchMazeWithDFS(outsetx, outsety);
-searchMazeWithBFS(outsetx, outsety);
+let dumps = [];
+let backTrack = true;
+let mazeGenerated = false, currMaze = '';
 
-function init() {
+function initialize() {
 	canvas.width = (mazerangex + 2) * 25;
 	canvas.height = (mazerangey + 2) * 25;
 
@@ -59,16 +58,18 @@ function generateMaze(x, y) {
 		if (doubley + dy[step] - 1 != mazerangey
 			&& maze[doublex + 2 * dx[step]][doubley + 2 * dy[step]]) {
 			maze[doublex + dx[step]][doubley + dy[step]] = 0;
-			maze_dumps.push(JSON.stringify(maze));
+			dumps.push(JSON.stringify(maze));
 			generateMaze(x + dx[step], y + dy[step]);
 		}
 	}
 }
 
-function searchMazeWithDFS(x, y) {
+function searchMazeWithDFS(x, y, t) {
 	if (x == terminalx && y == terminaly) {
-		showProcess();
-		dfs_searching = false;
+		if (t == 0) paintMaze(maze);
+		else showProcess(t);
+
+		backTrack = false;
 		throw "Terminal reached in DFS.";
 	} else {
 		for (var step = 0; step < 4; step++) {
@@ -80,20 +81,20 @@ function searchMazeWithDFS(x, y) {
 				x = x + dx[step]; y = y + dy[step];
 
 				maze[x][y] = 15;
-				maze_dumps.push(JSON.stringify(maze));
+				dumps.push(JSON.stringify(maze));
 
-				searchMazeWithDFS(x, y);
+				searchMazeWithDFS(x, y, t);
 
-				if (dfs_searching) {
+				if (backTrack) {
 					maze[x][y] = 16; x = x - dx[step]; y = y - dy[step];
-					maze_dumps.push(JSON.stringify(maze));
+					dumps.push(JSON.stringify(maze));
 				}
 			}
 		}
 	}
 }
 
-function searchMazeWithBFS(x, y) {
+function searchMazeWithBFS(x, y, t) {
 	var Q = new Array(), Qupdated;
 
 	var QnextNum = new Array(MAX_RANGE_OF_MAZE);
@@ -120,7 +121,7 @@ function searchMazeWithBFS(x, y) {
 
 				var xstep = x + dx[step], ystep = y + dy[step];
 				maze[xstep][ystep] = 17;
-				maze_dumps.push(JSON.stringify(maze));
+				dumps.push(JSON.stringify(maze));
 
 				Q.push([xstep, ystep]); Qupdated = 1;
 				Qpre[xstep][ystep] = [x, y];
@@ -129,31 +130,32 @@ function searchMazeWithBFS(x, y) {
 				if (xstep == terminalx && ystep == terminaly) {
 					do {
 						maze[xstep][ystep] = 15;
-						maze_dumps.push(JSON.stringify(maze));
+						dumps.push(JSON.stringify(maze));
 
 						var xtemp = Qpre[xstep][ystep][0];
 						ystep = Qpre[xstep][ystep][1];
 						xstep = xtemp;
 					} while (xstep && ystep);
 
-					showProcess();
+					if (t == 0) paintMaze(maze);
+					else showProcess(t);
 					throw "Terminal reached in BFS.";
 				}
 			}
 		}
 
 		if (!Qupdated) {
-			var popx = x, popy = y;
-			while (popx && popy
-				&& !QnextNum[popx][popy]) {
-				maze[popx][popy] = 16;
-				maze_dumps.push(JSON.stringify(maze));
+			var stepBackx = x, stepBacky = y;
+			while (stepBackx && stepBacky
+				&& !QnextNum[stepBackx][stepBacky]) {
+				maze[stepBackx][stepBacky] = 16;
+				dumps.push(JSON.stringify(maze));
 
-				var xtemp = Qpre[popx][popy][0];
-				popy = Qpre[popx][popy][1];
-				popx = xtemp;
+				var xtemp = Qpre[stepBackx][stepBacky][0];
+				stepBacky = Qpre[stepBackx][stepBacky][1];
+				stepBackx = xtemp;
 
-				QnextNum[popx][popy]--;
+				QnextNum[stepBackx][stepBacky]--;
 			}
 		}
 		Q.shift();
@@ -182,11 +184,14 @@ function paintMaze(m) {
 	}
 }
 
-function showProcess() {
-	maze_dumps.forEach(function(m, i) {
+function showProcess(t) {
+	dumps.forEach(function(m, i) {
 		setTimeout(function() {
 			paintMaze(JSON.parse(m));
-		}, 30 * i);
+		}, i * t);
 	});
-	paintMaze(maze);
+
+	setTimeout(function() {
+		paintMaze(maze);
+	}, dumps.length * t);
 }
